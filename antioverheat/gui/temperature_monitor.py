@@ -3,29 +3,29 @@
 # Anti-Overheat Temperature-Monitor
 # A Tkinter-based GUI that notifies about CPU overheat
 
-# (C) Demian Wolf 2020
+# (C) Demian Wolf 2020-2021
 
 
-from functools import partial
 import tkinter as tk
 import tkinter.ttk as ttk
-import threading
+import tkinter.messagebox as tk_msgbox
 import argparse
 import subprocess
 import os
-import time
 
 import colour
 
-import core
+from ..backend.api import CPUPowerAPI
 
 
 # TODO: add logging
 
-class Notification(tk.Tk):
+class OverheatNotification(tk.Toplevel):
     """The main class of this part of this app."""
-    def __init__(self, sound_notification=False, refresh_interval=500):
-        super().__init__()
+    def __init__(self, master, sound_notification=False, refresh_interval=500):
+        super().__init__(master)
+
+        self.api = CPUPowerAPI()
 
         self.sound_notification = bool(sound_notification)
         self.refresh_interval = refresh_interval        
@@ -51,13 +51,13 @@ class Notification(tk.Tk):
         """Inits `self.cores_tree`.
         Called only once
         """
-        cpu_cores = list(core.get_cpu_cores())
+        cpu_cores = list(self.api.get_cpu_cores())
 
         columns = ["#{}".format(no) for no in range(1, len(cpu_cores) + 1)]
         self.cores_tree.configure(columns=columns)
         
         for column, cpu_core in zip(columns, cpu_cores):
-            self.cores_tree.heading(column, text=cpu_core[0])
+            self.cores_tree.heading(column, text=cpu_core.name)
             self.cores_tree.column(column, anchor="center")
         
     def refresh(self):
@@ -80,10 +80,10 @@ class Notification(tk.Tk):
                 return "{} \u00b0C".format(raw)
             raise TypeError("raw must be either int or float, not {}".format(type(raw)))
         
-        cpu_cores = list(core.get_cpu_cores())
+        cpu_cores = list(self.api.get_cpu_cores())
         
         for cpu_core in cpu_cores:
-            if cpu_core[1] >= 75:
+            if cpu_core.value >= 75:
                 self.deiconify()
                 self.geometry("+{}+{}"\
                               .format(self.winfo_screenwidth() // 2 - self.winfo_width() // 2, 0))
@@ -94,7 +94,7 @@ class Notification(tk.Tk):
             self.withdraw()
             
         if self.winfo_viewable():
-            temp_values = [cpu_core[1] for cpu_core in cpu_cores]
+            temp_values = [cpu_core.value for cpu_core in cpu_cores]
             color = colour.hsl2hex(((120 - max(temp_values)) / 360, 1, 0.5))
             for widget in (self.title_frame, *self.title_frame.winfo_children()):
                 widget.configure(bg=color)
@@ -103,31 +103,3 @@ class Notification(tk.Tk):
             self.cores_tree.insert("", "end", values=prettified_tvs)
             
         self.after(self.refresh_interval, self.refresh)
-
-def main():
-    root = tk.Tk()
-    root.withdraw()
-    
-    uid = os.getuid()
-    if uid == 0:
-        showerror("Error", "Please DO NOT run this program as root!")
-        return
-
-    args_parser = argparse.ArgumentParser()
-    args_parser.add_argument("-s",
-                             "--sound",
-                             action="store_true",
-                             help="enable sound notification by default")
-    args_parser.add_argument("-i",
-                             "--interval",
-                             default=500,
-                             type=int,
-                             help="refresh frequency (in ms). Default value is 500 ms.")
-    args = args_parser.parse_args()
-
-    root.destroy()
-    
-    Notification(sound_notification=args.sound, refresh_interval=args.interval).mainloop()
-    
-if __name__ == "__main__":
-    main()

@@ -1,8 +1,8 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import tkinter.messagebox as tk_msgbox
 
-import core
-import misc
+from ...backend.misc import verify_sudo_pwd
 
 
 class GetSudoPasswordDialog(tk.Toplevel):
@@ -12,11 +12,11 @@ class GetSudoPasswordDialog(tk.Toplevel):
     :type master: tkinter.Tk
     """
     
-    def __init__(self, master):
+    def __init__(self, master, title=None, prompt=None):
         super().__init__(master)
 
-        title = "Sudo Password"
-        prompt = "Please enter your user password (the same you use with sudo):"
+        title = title or "Sudo Password"
+        prompt = prompt or "Please enter your user password (the same you use with sudo):"
         
         self.data = None
         
@@ -51,8 +51,8 @@ class GetSudoPasswordDialog(tk.Toplevel):
         """
         
         data = self.entry.get()
-        if not misc.verify_sudo_pwd(data):
-            showerror("Error", "You entered a wrong password!")
+        if not verify_sudo_pwd(data):
+            tk_msgbox.showerror("Error", "You entered a wrong password!")
             return
         self.data = data
         self.destroy()

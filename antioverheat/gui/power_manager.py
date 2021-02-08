@@ -3,7 +3,7 @@
 # Anti-Overheat Power-Manager
 # A Tkinter-based GUI for CPU power management
 
-# (C) Demian Volkov, 2020
+# (C) Demian Volkov, 2020-2021
 
 import tkinter as tk
 from tkinter.messagebox import showerror
@@ -11,26 +11,32 @@ from tkinter.font import Font
 import tkinter.ttk as ttk
 import functools
 import subprocess
+import operator
 import argparse
 import os
 
 import colour
 
-from custom_dialogs import GetSudoPasswordDialog
-from custom_widgets import DragWinButton
-import core
-import misc
+from antioverheat.gui.dialogs import GetSudoPasswordDialog
+from antioverheat.gui.widgets import DragWinButton
+from ..backend.api import CPUPowerAPI
+from ..backend.automode import AutomodeThread
 
 
-class PowerManager(tk.Tk):
+class PowerManager(tk.Toplevel):
     """The main class of this part of this app."""
     
-    def __init__(self, sudo_password):
-        super().__init__()
+    def __init__(self, master, sudo_password, automode):
+        super().__init__(master)
 
-        self.min_fr, self.max_fr = core.get_hardware_limits()
+        self.api = CPUPowerAPI(sudo_password)
 
-        self.sudo_password = sudo_password
+        self.automode_thread = AutomodeThread(sudo_password, enabled=False)
+        self.automode_cbtn_var = tk.BooleanVar(self)
+        self.automode_cbtn_var.trace("w", self._change_automode_state)
+        self.automode_cbtn_var.set(automode)
+
+        self.min_fr, self.max_fr = self.api.hardware_limits
         
         self.overrideredirect(True)
         self.attributes("-topmost", True)
@@ -40,8 +46,9 @@ class PowerManager(tk.Tk):
                               command=self.change)
         self.scale.grid(row=0, column=0, columnspan=2)
 
-        self.aa_cbtn = tk.Checkbutton(self, text="Anti-Overheat", font=Font(size=8))
-        self.aa_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
+        self.automode_cbtn = tk.Checkbutton(self, text="Automode", font=Font(size=8),
+                                            variable=self.automode_cbtn_var)
+        self.automode_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
         
         self.close_btn = tk.Button(self, text="Close", command=self.destroy)
         self.close_btn.grid(row=2, column=0)
@@ -59,12 +66,16 @@ class PowerManager(tk.Tk):
         :type event: tkinter.Event
         """
         
-        core.set_max_fpolicy(self.sudo_password, self.scale.get())
+        self.api.set_max_fpolicy(self.scale.get())
         self.update_color()
+
+    def _change_automode_state(self, *args, **kwargs):
+        self.automode_thread.enabled = self.automode_cbtn_var.get()
+        print(self.automode_thread.enabled)
         
     def update_scale(self):
         """This method updates scale every 10 seconds in case the frequency has been changed without using this program."""
-        current_frequency = core.get_current_fpolicy()[1]
+        current_frequency = self.api.get_current_fpolicy()[1]
         self.scale.set(current_frequency)
         self.update_color()
         self.after(10000, self.update_scale)
@@ -75,41 +86,5 @@ class PowerManager(tk.Tk):
         color = colour.hsl2hex((abs(value * (1/3) / (self.max_fr - self.min_fr) - (1/3)), 1, 0.5))
 
         self.configure(background=color)
-        for widget in (self.scale, self.aa_cbtn, self.close_btn, self.drag_btn):
+        for widget in (self.scale, self.automode_cbtn, self.close_btn, self.drag_btn):
             widget.configure(background=color, activebackground=color)
-
-# TODO: sys.exit(1) after every error message rather than just return
-
-def main():
-    root = tk.Tk()
-    root.withdraw()
-    
-    uid = os.getuid()
-    if uid == 0:
-        showerror("Error", "Please DO NOT run this program as root!")
-        return
-    
-    args_parser = argparse.ArgumentParser()
-    args_parser.add_argument("-p",
-                           "--password",
-                           help="your user password (necessary to execute commands through sudo)")
-    args = args_parser.parse_args()
-    
-    if args.password:
-        sudo_password = args.password
-        if not misc.verify_sudo_pwd(sudo_password):
-            showerror("Error", "You have provided a wrong password!")
-            return
-    else:
-        sudo_password = GetSudoPasswordDialog(root).data
-        if sudo_password is None:
-            showerror("Error",
-                      "No sudo password has been provided. This program will now exit.")
-            return
-
-    root.destroy()
-
-    PowerManager(sudo_password=sudo_password).mainloop()
-
-if __name__ == "__main__":
-    main()
