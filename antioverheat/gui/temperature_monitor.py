@@ -6,12 +6,9 @@
 # (C) Demian Wolf 2020-2021
 
 
+import subprocess
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox as tk_msgbox
-import argparse
-import subprocess
-import os
 
 import colour
 

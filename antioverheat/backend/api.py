@@ -1,5 +1,4 @@
 import subprocess
-import os
 
 import sensors
 
@@ -13,12 +12,14 @@ class CPUCore(object):
 class CPUPowerAPI(object):
     """API for cpupower."""
 
-    # TODO: rewrite these ugly methods using JSON output and regexes
+    # TODO: rewrite the ugly methods below to use JSON output and/or regexes
 
     def __init__(self, sudo_password=None):
         self.sudo_password = sudo_password
 
-        self.__setup_hardware_limits()
+        shell_output = subprocess.check_output("cpupower frequency-info | grep \"hardware limits\"", shell=True)
+        shell_output = shell_output.decode().strip()
+        self.__hardware_limits = tuple(map(self.to_mhz_value, shell_output.split(": ")[-1].split(" - ")))
 
     @staticmethod
     def to_mhz_value(string):
@@ -49,28 +50,33 @@ class CPUPowerAPI(object):
             return value * coeff
         raise UnknownFrequencyUnitError(unit)
 
-    def __setup_hardware_limits(self):
-        shell_output = subprocess.check_output("cpupower frequency-info | grep \"hardware limits\"", shell=True)
-        shell_output = shell_output.decode().strip()
-        self.__hardware_limits = tuple(map(self.to_mhz_value, shell_output.split(": ")[-1].split(" - ")))
-
     @property
     def hardware_limits(self):
         return self.__hardware_limits
 
-    def get_current_fpolicy(self):
-        """Gets current cpu frequency policy in MHz."""
+    def get_policy(self):
+        """Gets current CPU frequency policy in MHz."""
         shell_output = subprocess.check_output("cpupower frequency-info | grep \"should be within\"", shell=True)
         shell_output = shell_output.decode().strip()[:-1].split()
         return tuple(map(self.to_mhz_value, (" ".join(shell_output[-5:-3]), " ".join(shell_output[-2:]))))
 
-    def set_max_fpolicy(self, mhz_fr):
-        """Sets maximum frequency policy.
+    def set_policy(self, **kwargs):
+        """Sets frequency policy.
 
         Raises: SudoPasswordRequired if the password was not passed to the constructor."""
+        if not kwargs:
+            raise ValueError("you must specify some kwargs")
+
         if self.sudo_password is None:
             raise SudoPasswordRequired
-        os.system("echo {} | sudo -S cpupower frequency-set -u {}MHz".format(self.sudo_password, mhz_fr))
+
+        # FIXME: min must be after max in case both are given
+        for arg, value in kwargs.items():
+            if value is not None:
+                arg = "-" + arg if len(arg) == 1 else "--" + arg
+                subprocess.call("echo {} | sudo -S cpupower frequency-set {} {}MHz"\
+                                .format(self.sudo_password, arg, value),
+                                )
 
     def get_cpu_cores(self):
         """Gets names of CPU cores and their temperature values."""

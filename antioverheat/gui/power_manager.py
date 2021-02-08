@@ -6,21 +6,12 @@
 # (C) Demian Volkov, 2020-2021
 
 import tkinter as tk
-from tkinter.messagebox import showerror
 from tkinter.font import Font
-import tkinter.ttk as ttk
-import functools
-import subprocess
-import operator
-import argparse
-import os
 
 import colour
 
-from antioverheat.gui.dialogs import GetSudoPasswordDialog
 from antioverheat.gui.widgets import DragWinButton
 from ..backend.api import CPUPowerAPI
-from ..backend.automode import AutomodeThread
 
 
 class PowerManager(tk.Toplevel):
@@ -30,25 +21,19 @@ class PowerManager(tk.Toplevel):
         super().__init__(master)
 
         self.api = CPUPowerAPI(sudo_password)
-
-        self.automode_thread = AutomodeThread(sudo_password, enabled=False)
-        self.automode_cbtn_var = tk.BooleanVar(self)
-        self.automode_cbtn_var.trace("w", self._change_automode_state)
-        self.automode_cbtn_var.set(automode)
-
-        self.min_fr, self.max_fr = self.api.hardware_limits
         
         self.overrideredirect(True)
         self.attributes("-topmost", True)
         
-        self.scale = tk.Scale(self, orient="vertical",
-                              from_=self.min_fr, to=self.max_fr, label="MHz",
-                              command=self.change)
+        self.scale = tk.Scale(self, orient="vertical", label="MHz", command=self.change)
+        self.scale["from_"], self.scale["to"] = self.api.hardware_limits
         self.scale.grid(row=0, column=0, columnspan=2)
 
+        self.automode_var = tk.BooleanVar(value=automode)
         self.automode_cbtn = tk.Checkbutton(self, text="Automode", font=Font(size=8),
-                                            variable=self.automode_cbtn_var)
+                                            variable=self.automode_var)
         self.automode_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
+        self.after(5000, self.automode_step)
         
         self.close_btn = tk.Button(self, text="Close", command=self.destroy)
         self.close_btn.grid(row=2, column=0)
@@ -56,7 +41,7 @@ class PowerManager(tk.Toplevel):
         self.drag_btn = DragWinButton(self)
         self.drag_btn.grid(row=2, column=1)
         
-        self.update_scale()
+        self.update_scale(recursive=True)
     
     def change(self, event):
         """This method is called when the scale is moved.
@@ -66,25 +51,48 @@ class PowerManager(tk.Toplevel):
         :type event: tkinter.Event
         """
         
-        self.api.set_max_fpolicy(self.scale.get())
+        self.api.set_policy(max=self.scale.get())
         self.update_color()
 
-    def _change_automode_state(self, *args, **kwargs):
-        self.automode_thread.enabled = self.automode_cbtn_var.get()
-        print(self.automode_thread.enabled)
-        
-    def update_scale(self):
-        """This method updates scale every 10 seconds in case the frequency has been changed without using this program."""
-        current_frequency = self.api.get_current_fpolicy()[1]
-        self.scale.set(current_frequency)
+    def update_scale(self, recursive=False):
+        """Updates the scale with the precise data in case CPU frequency was changed by another app.
+
+        if recursive is enabled, it is automatically called every 10 seconds."""
+
+        current_policy = self.api.get_policy()
+        self.scale.set(current_policy[1])
         self.update_color()
-        self.after(10000, self.update_scale)
+
+        if recursive:
+            self.after(10000, self.update_scale, True)
 
     def update_color(self):
-        """This method updates color."""
-        value = self.scale.get() - self.min_fr
-        color = colour.hsl2hex((abs(value * (1/3) / (self.max_fr - self.min_fr) - (1/3)), 1, 0.5))
+        """This method updates color every time it the scale has been changed."""
+
+        min_frequency, max_frequency = self.api.hardware_limits
+
+        value = self.scale.get() - min_frequency
+        color = colour.hsl2hex((abs(value * (1/3) / (max_frequency - min_frequency) - (1/3)), 1, 0.5))
 
         self.configure(background=color)
         for widget in (self.scale, self.automode_cbtn, self.close_btn, self.drag_btn):
             widget.configure(background=color, activebackground=color)
+
+    def automode_step(self):
+        """
+        This method stands for one step of automode.
+        It is called every 5 seconds, and adjusts the CPU frequency depending on its temperature.
+        """
+
+        if self.automode_var.get():
+            temperature = max(self.api.get_cpu_cores(), key=lambda core: core.value).value
+            current_max_policy = self.api.get_policy()[-1]
+            if temperature > 90:
+                self.api.set_policy(max=self.api.hardware_limits[0])
+            elif temperature > 70:
+                self.api.set_policy(max=current_max_policy - 100)
+            else:
+                self.api.set_policy(max=current_max_policy + 100)
+            self.update_scale(recursive=False)
+
+        self.after(5000, self.automode_step)

@@ -1,14 +1,12 @@
-import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox as tk_msgbox
-import functools
 import argparse
-import sys
 import os
+import sys
+import tkinter as tk
+import tkinter.messagebox as tk_msgbox
 
-from antioverheat.gui.dialogs import GetSudoPasswordDialog
 from antioverheat.backend.misc import verify_sudo_pwd
 from antioverheat.gui import PowerManager, OverheatNotification
+from antioverheat.gui.dialogs import GetSudoPasswordDialog
 
 
 def main():
