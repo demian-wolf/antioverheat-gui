@@ -11,6 +11,7 @@ But what if you can't do that at the moment? You can use this app until you're r
 This app consists of two subapps:
 
 * Power Manager
+    * ![Power Manager screenshot](https://i.imgur.com/RADlu4F.png "Power Manager")
     * A tiny window is displayed on the screen. This window is draggable on the screen. The color of
     this window changes gradually from green (low CPU frequency) to red (high CPU frequency).
     * You can effortlessly manage the frequency of the CPU, moving the slider on the scale, increasing
@@ -20,7 +21,9 @@ This app consists of two subapps:
     When CPU temperature is more-or-less low it increases the CPU frequency, once it is higher, it
     decreases it, and once it is very high, it makes it as low as possible.
 * Temperature Monitor
-    * Another window at the top of the screen, that appears once CPU overheats.
+    * ![Temperature Monitor screenshot](https://i.imgur.com/GK3qMek.png "Temperature Monitor")
+    * Another window at the top of the screen, that appears once CPU overheats. The color of this window also
+    changes from yellow to red depending on the CPU frequency
     * Besides the warning, the actual temperature values for every CPU core are displayed.
     * Sound notification can be enabled via -s command-line argument (beeps)
 
