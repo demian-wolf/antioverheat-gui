@@ -76,7 +76,7 @@ class CPUPowerAPI(object):
                 arg = "-" + arg if len(arg) == 1 else "--" + arg
                 subprocess.call("echo {} | sudo -S cpupower frequency-set {} {}MHz"\
                                 .format(self.sudo_password, arg, value),
-                                )
+                                shell=True)
 
     def get_cpu_cores(self):
         """Gets names of CPU cores and their temperature values."""
