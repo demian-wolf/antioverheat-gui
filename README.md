@@ -2,13 +2,36 @@
 
 #### What do you may need it for?
 Does your PC's/laptop's CPU overheat lately? Maybe, it even started to turn off without warning while doing some really
-tough tasks? If yes, it's time to clean up the device, reapply the thermal grease, replace the CPU
-fan...
+tough tasks? If so, it's time to clean up the device, reapply the thermal grease, and so...
 
-But what if you can't do that at the moment? You can use this app until you're ready!
+But what if you can't (don't want to) do that at the moment? You can try this app as a temporary
+solution!
 
 #### How does it work?
-This app consists of two subapps:
+In order to deal with overheating problems, you could try lowering maximum frequency of the CPU.
+
+On Linux, it is possible to do that with **cpupower** (it is necessary to install it first;
+see the next part of this README for that):
+```
+sudo cpupower frequency-set --max <frequency><unit>
+```
+Cpupower also provides a command to get frequency info:
+```
+cpupower frequency-info
+```
+Another command-line tool called **lm-sensors** provides information about CPU temperature values:
+```
+sensors
+```
+That said, opening the terminal and typing command(s) like these ones every time you need to get or
+change CPU frequency/temperature isn't a really good idea. It might be really distracting and
+time-consuming; there is also a risk you'll be doing something really important
+and forget about monitoring CPU temperature, and your device would get so overheated
+that it will turn off.
+
+This app can solve such problems:
+it consists of two GUIs on top of a wrappers around the aforementioned "cpupower" and "lm-sensors"
+commands.
 
 * Power Manager
     * ![Power Manager screenshot](https://i.imgur.com/RADlu4F.png "Power Manager")
@@ -28,7 +51,8 @@ This app consists of two subapps:
     * Sound notification can be enabled via -s command-line argument (beeps)
 
 #### How to install and use it?
-**Note:** currently this app is available only for Linux. Windows and Mac are not yet supported.
+**Note:** currently this app is available only for Linux. Other platforms are not yet supported.
+1) Before installing this app itself, you might need to install cpupower and lm-sensors 
 1) Clone this repository
     ```
     git clone https://github.com/demian-wolf/AntiOverheat-GUI.git
