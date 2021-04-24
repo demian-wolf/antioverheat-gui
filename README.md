@@ -52,7 +52,11 @@ commands.
 
 #### How to install and use it?
 **Note:** currently this app is available only for Linux. Other platforms are not yet supported.
-1) Before installing this app itself, you might need to install cpupower and lm-sensors 
+1) Before installing this app itself, you might need to install "cpupower" and "lm-sensors" on your
+system.
+Guides: [for cpupower](https://command-not-found.com/cpupower), and
+[for lm-sensors](https://linoxide.com/monitoring-2/install-lm-sensors-linux/)
+ 
 1) Clone this repository
     ```
     git clone https://github.com/demian-wolf/AntiOverheat-GUI.git

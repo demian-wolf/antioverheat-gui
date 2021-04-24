@@ -6,9 +6,9 @@
 # (C) Demian Wolf 2020-2021
 
 
-import subprocess
 import tkinter as tk
 import tkinter.ttk as ttk
+import subprocess
 
 import colour
 
@@ -46,7 +46,7 @@ class OverheatNotification(tk.Toplevel):
 
     def init_treeview(self):
         """Inits `self.cores_tree`.
-        Called only once
+        Should be called only once.
         """
         cpu_cores = list(self.api.get_cpu_cores())
 
@@ -60,20 +60,20 @@ class OverheatNotification(tk.Toplevel):
     def refresh(self):
         """Refreshes the notfication window.
 
-        If there is no overheat -- it is withdrawn.
-        Otherwise it is deiconified; the color of the notification
+        If there is no overheat, it is withdrawn.
+        Otherwise, it is deiconified; the color of the notification
         and the values in the `self.cores_tree` are updated.
         
         Also the sound notification is played, if enabled.
 
-        It is called every 500 ms by default.
+        By default, it is called every 500 ms (self.refresh_interval).
         """
 
         def __raw2celsius(raw):
             if isinstance(raw, float):
                 if raw.is_integer():
                    raw = int(raw)
-            if isinstance(raw, (float, int)):
+            if isinstance(raw, int):
                 return "{} \u00b0C".format(raw)
             raise TypeError("raw must be either int or float, not {}".format(type(raw)))
         

@@ -44,7 +44,7 @@ class PowerManager(tk.Toplevel):
         self.update_scale(recursive=True)
     
     def change(self, event):
-        """This method is called when the scale is moved.
+        """This method is called when the scale is being moved.
         It applies the changes and calls the update_color() method.
 
         :param event: tkinter event
@@ -55,11 +55,13 @@ class PowerManager(tk.Toplevel):
         self.update_color()
 
     def update_scale(self, recursive=False):
-        """Updates the scale with the precise data in case CPU frequency was changed by another app.
+        """This method updates the scale with the precise data
+        in case CPU frequency was changed by another app.
 
         if recursive is enabled, it is automatically called every 10 seconds."""
 
         current_policy = self.api.get_policy()
+
         self.scale.set(current_policy[1])
         self.update_color()
 
@@ -67,7 +69,7 @@ class PowerManager(tk.Toplevel):
             self.after(10000, self.update_scale, True)
 
     def update_color(self):
-        """This method updates color every time it the scale has been changed."""
+        """This method updates color of the scale every time the policy has been changed."""
 
         min_frequency, max_frequency = self.api.hardware_limits
 
@@ -80,7 +82,7 @@ class PowerManager(tk.Toplevel):
 
     def automode_step(self):
         """
-        This method stands for one step of automode.
+        This method stands for one step of "Automode".
         It is called every 5 seconds, and adjusts the CPU frequency depending on its temperature.
         """
 

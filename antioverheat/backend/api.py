@@ -45,9 +45,8 @@ class CPUPowerAPI(object):
         UNITS = {"GHz": 1000, "MHz": 1}
         value, unit = string.split()
         value = float(value)
-        coeff = UNITS.get(unit)
-        if coeff:
-            return value * coeff
+        if unit in UNITS:
+            return value * UNITS[unit]
         raise UnknownFrequencyUnitError(unit)
 
     @property
