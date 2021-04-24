@@ -11,12 +11,6 @@ def main():
     root = tk.Tk()
     root.withdraw()
 
-    # TODO: require root privileges only for tempmon
-    uid = os.getuid()
-    if uid != 0:
-        tk_msgbox.showerror("Error", "This app requires root privileges!")
-        sys.exit(1)
-
     args_parser = argparse.ArgumentParser()
 
     args_parser.add_argument("-powerman",
@@ -49,7 +43,11 @@ def main():
                                               "Powerman will not be launched, and the args will be ignored.")
 
     if args.powerman:
-        root.after(0, PowerManager, root, args.automode)
+        uid = os.getuid()
+        if uid == 0:
+            root.after(0, PowerManager, root, args.automode)
+        else:
+            tk_msgbox.showerror("Error", "Powerman requires root privileges, so it will not be started!")
 
     if args.tempmon:
         if args.interval is None:
