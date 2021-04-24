@@ -2,7 +2,7 @@ import subprocess
 
 import sensors
 
-from .exceptions import UnknownFrequencyUnitError, SudoPasswordRequired
+from .exceptions import UnknownFrequencyUnitError
 
 
 class CPUCore(object):
@@ -14,9 +14,7 @@ class CPUPowerAPI(object):
 
     # TODO: rewrite the ugly methods below to use JSON output and/or regexes
 
-    def __init__(self, sudo_password=None):
-        self.sudo_password = sudo_password
-
+    def __init__(self):
         shell_output = subprocess.check_output("cpupower frequency-info | grep \"hardware limits\"", shell=True)
         shell_output = shell_output.decode().strip()
         self.__hardware_limits = tuple(map(self.to_mhz_value, shell_output.split(": ")[-1].split(" - ")))
@@ -66,15 +64,12 @@ class CPUPowerAPI(object):
         if not kwargs:
             raise ValueError("you must specify some kwargs")
 
-        if self.sudo_password is None:
-            raise SudoPasswordRequired
-
         # FIXME: min must be after max in case both are given
         for arg, value in kwargs.items():
             if value is not None:
                 arg = "-" + arg if len(arg) == 1 else "--" + arg
-                subprocess.call("echo {} | sudo -S cpupower frequency-set {} {}MHz"\
-                                .format(self.sudo_password, arg, value),
+                subprocess.call("cpupower frequency-set {} {}MHz"\
+                                .format(arg, value),
                                 shell=True)
 
     def get_cpu_cores(self):

@@ -17,10 +17,10 @@ from ..backend.api import CPUPowerAPI
 class PowerManager(tk.Toplevel):
     """The main class of this part of this app."""
     
-    def __init__(self, master, sudo_password, automode):
+    def __init__(self, master, automode):
         super().__init__(master)
 
-        self.api = CPUPowerAPI(sudo_password)
+        self.api = CPUPowerAPI()
         
         self.overrideredirect(True)
         self.attributes("-topmost", True)
