@@ -11,6 +11,7 @@ def main():
     root = tk.Tk()
     root.withdraw()
 
+    # TODO: require root privileges only for tempmon
     uid = os.getuid()
     if uid != 0:
         tk_msgbox.showerror("Error", "This app requires root privileges!")

@@ -12,7 +12,7 @@ import subprocess
 
 import colour
 
-from ..backend.api import CPUPowerAPI
+from antioverheat.backend.api import CPUPowerAPI
 
 
 # TODO: add logging
@@ -30,6 +30,13 @@ class OverheatNotification(tk.Toplevel):
         self.overrideredirect(True)
         self.attributes("-topmost", True)
 
+        self.create_widgets()
+
+        self.after(0, self.refresh)
+
+    def create_widgets(self):
+        """Creates the widgets in the window."""
+
         self.title_frame = tk.Frame(self)
         tk.Label(self.title_frame,
                  image="::tk::icons::warning").pack(side="left", anchor="center")
@@ -42,10 +49,8 @@ class OverheatNotification(tk.Toplevel):
         self.init_treeview()
         self.cores_tree.pack(fill="x")
 
-        self.after(0, self.refresh)
-
     def init_treeview(self):
-        """Inits `self.cores_tree`.
+        """Prepares `self.cores_tree` for displaying real-time CPU temperature.
         Should be called only once.
         """
         cpu_cores = list(self.api.get_cpu_cores())

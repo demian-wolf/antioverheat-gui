@@ -11,7 +11,7 @@ from tkinter.font import Font
 import colour
 
 from antioverheat.gui.widgets import DragWinButton
-from ..backend.api import CPUPowerAPI
+from antioverheat.backend.api import CPUPowerAPI
 
 
 class PowerManager(tk.Toplevel):
@@ -24,28 +24,34 @@ class PowerManager(tk.Toplevel):
         
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        
+
+        self.create_widgets()
+        self.automode_var.set(automode)
+
+        self.update_scale(recursive=True)
+
+    def create_widgets(self):
+        """Creates the widgets in the window."""
+
         self.scale = tk.Scale(self, orient="vertical", label="MHz", command=self.change)
         self.scale["from_"], self.scale["to"] = self.api.hardware_limits
         self.scale.grid(row=0, column=0, columnspan=2)
 
-        self.automode_var = tk.BooleanVar(value=automode)
+        self.automode_var = tk.BooleanVar()
         self.automode_cbtn = tk.Checkbutton(self, text="Automode", font=Font(size=8),
                                             variable=self.automode_var)
         self.automode_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
         self.after(5000, self.automode_step)
-        
+
         self.close_btn = tk.Button(self, text="Close", command=self.destroy)
         self.close_btn.grid(row=2, column=0)
-        
+
         self.drag_btn = DragWinButton(self)
         self.drag_btn.grid(row=2, column=1)
-        
-        self.update_scale(recursive=True)
-    
+
     def change(self, event):
         """This method is called when the scale is being moved.
-        It applies the changes and calls the update_color() method.
+        It applies the CPU frequency changes and calls the update_color() method.
 
         :param event: tkinter event
         :type event: tkinter.Event
