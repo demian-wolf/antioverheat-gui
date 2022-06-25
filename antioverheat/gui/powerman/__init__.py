@@ -14,19 +14,19 @@ from antioverheat.gui.widgets import DragWinButton
 from antioverheat.backend.api import CPUPowerAPI
 
 
-class PowerManager(tk.Toplevel):
+class PowerManager(tk.Tk):
     """The main class of this part of this app."""
-    
-    def __init__(self, master, automode):
-        super().__init__(master)
+
+    def __init__(self, auto):
+        super(PowerManager).__init__()
 
         self.api = CPUPowerAPI()
-        
+
         self.overrideredirect(True)
         self.attributes("-topmost", True)
 
         self.create_widgets()
-        self.automode_var.set(automode)
+        self.automode_var.set(auto)
 
         self.update_scale(recursive=True)
 
@@ -56,7 +56,7 @@ class PowerManager(tk.Toplevel):
         :param event: tkinter event
         :type event: tkinter.Event
         """
-        
+
         self.api.set_policy(max=self.scale.get())
         self.update_color()
 
