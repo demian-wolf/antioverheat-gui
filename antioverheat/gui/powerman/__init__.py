@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-
-# Anti-Overheat Power-Manager
-# A Tkinter-based GUI for CPU power management
-
-# (C) Demian Volkov, 2020-2021
-
 import tkinter as tk
 from tkinter.font import Font
 

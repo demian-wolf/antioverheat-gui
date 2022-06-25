@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-
-# Anti-Overheat Temperature-Monitor
-# A Tkinter-based GUI that notifies about CPU overheat
-
-# (C) Demian Wolf 2020-2021
-
 import tkinter as tk
 import tkinter.ttk as ttk
 import subprocess
