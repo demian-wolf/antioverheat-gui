@@ -11,7 +11,7 @@ class PowerManager(tk.Tk):
     """The main class of this part of this app."""
 
     def __init__(self, auto):
-        super(PowerManager).__init__()
+        super(PowerManager, self).__init__()
 
         self.api = CPUPowerAPI()
 
