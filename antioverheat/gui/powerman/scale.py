@@ -36,7 +36,7 @@ class FrequencyScale(tk.Scale):
         self.set(value)
 
         if recursive:
-            self.after(10_000, self.refresh)
+            self.after(10_000, self.refresh, True)
 
     @functools.lru_cache(maxsize=None)
     def _value2background(self, value: int) -> str:
