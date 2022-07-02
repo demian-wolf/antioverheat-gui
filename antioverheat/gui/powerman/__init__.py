@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter.font import Font
 
-import colour
-
+from antioverheat.gui.powerman.scale import FrequencyScale
 from antioverheat.gui.widgets import DragWinButton
 from antioverheat.backend.api import CPUPowerAPI
 
@@ -21,13 +20,10 @@ class PowerManager(tk.Tk):
         self.create_widgets()
         self.automode_var.set(auto)
 
-        self.update_scale(recursive=True)
-
     def create_widgets(self):
         """Creates the widgets in the window."""
 
-        self.scale = tk.Scale(self, orient="vertical", label="MHz", command=self.change)
-        self.scale["from_"], self.scale["to"] = self.api.hardware_limits
+        self.scale = FrequencyScale(self)
         self.scale.grid(row=0, column=0, columnspan=2)
 
         self.automode_var = tk.BooleanVar()
@@ -41,43 +37,6 @@ class PowerManager(tk.Tk):
 
         self.drag_btn = DragWinButton(self)
         self.drag_btn.grid(row=2, column=1)
-
-    def change(self, event):
-        """This method is called when the scale is being moved.
-        It applies the CPU frequency changes and calls the update_color() method.
-
-        :param event: tkinter event
-        :type event: tkinter.Event
-        """
-
-        self.api.set_policy(max=self.scale.get())
-        self.update_color()
-
-    def update_scale(self, recursive=False):
-        """This method updates the scale with the precise data
-        in case CPU frequency was changed by another app.
-
-        if recursive is enabled, it is automatically called every 10 seconds."""
-
-        current_policy = self.api.get_policy()
-
-        self.scale.set(current_policy[1])
-        self.update_color()
-
-        if recursive:
-            self.after(10000, self.update_scale, True)
-
-    def update_color(self):
-        """This method updates color of the scale every time the policy has been changed."""
-
-        min_frequency, max_frequency = self.api.hardware_limits
-
-        value = self.scale.get() - min_frequency
-        color = colour.hsl2hex((abs(value * (1/3) / (max_frequency - min_frequency) - (1/3)), 1, 0.5))
-
-        self.configure(background=color)
-        for widget in (self.scale, self.automode_cbtn, self.close_btn, self.drag_btn):
-            widget.configure(background=color, activebackground=color)
 
     def automode_step(self):
         """
@@ -94,6 +53,6 @@ class PowerManager(tk.Tk):
                 self.api.set_policy(max=current_max_policy - 100)
             else:
                 self.api.set_policy(max=current_max_policy + 100)
-            self.update_scale(recursive=False)
+            self.scale.refresh()
 
         self.after(5000, self.automode_step)
