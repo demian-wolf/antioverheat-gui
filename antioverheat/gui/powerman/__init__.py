@@ -18,7 +18,7 @@ class PowerManager(tk.Tk):
         self.attributes("-topmost", True)
 
         self.create_widgets()
-        self.automode_var.set(auto)
+        self.auto_adjust_var.set(auto)
 
     def create_widgets(self):
         """Creates the widgets in the window."""
@@ -26,11 +26,11 @@ class PowerManager(tk.Tk):
         self.scale = FrequencyScale(self)
         self.scale.grid(row=0, column=0, columnspan=2)
 
-        self.automode_var = tk.BooleanVar()
-        self.automode_cbtn = tk.Checkbutton(self, text="Automode", font=Font(size=8),
-                                            variable=self.automode_var)
-        self.automode_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
-        self.after(5000, self.automode_step)
+        self.auto_adjust_var = tk.BooleanVar()
+        self.auto_adjust_cbtn = tk.Checkbutton(self, text="Auto Adjust", font=Font(size=8),
+                                            variable=self.auto_adjust_var)
+        self.auto_adjust_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
+        self.after(5000, self.auto_adjust_step)
 
         self.close_btn = tk.Button(self, text="Close", command=self.destroy)
         self.close_btn.grid(row=2, column=0)
@@ -38,13 +38,13 @@ class PowerManager(tk.Tk):
         self.drag_btn = DragWinButton(self)
         self.drag_btn.grid(row=2, column=1)
 
-    def automode_step(self):
+    def auto_adjust_step(self):
         """
-        This method stands for one step of "Automode".
+        This method stands for one step of "Auto Adjust".
         It is called every 5 seconds, and adjusts the CPU frequency depending on its temperature.
         """
 
-        if self.automode_var.get():
+        if self.auto_adjust_var.get():
             temperature = max(self.api.get_cpu_cores(), key=lambda core: core.value).value
             current_max_policy = self.api.get_policy()[-1]
             if temperature > 90:
@@ -55,4 +55,4 @@ class PowerManager(tk.Tk):
                 self.api.set_policy(max=current_max_policy + 100)
             self.scale.refresh()
 
-        self.after(5000, self.automode_step)
+        self.after(5000, self.auto_adjust_step)
