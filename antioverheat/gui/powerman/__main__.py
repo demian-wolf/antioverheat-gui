@@ -18,7 +18,7 @@ def parse_args():
 def main() -> None:
     args = parse_args()
 
-    app = PowerManager(auto=args.auto)
+    app = PowerManager(auto_adjust=args.auto)
     app.mainloop()
 
 

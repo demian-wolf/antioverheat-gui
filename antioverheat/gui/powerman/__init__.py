@@ -8,7 +8,7 @@ from antioverheat.gui.widgets import DragWinButton
 class PowerManager(tk.Tk):
     """The main class of this part of this app."""
 
-    def __init__(self, auto):
+    def __init__(self, auto_adjust=False):
         super(PowerManager, self).__init__()
 
         self.update_idletasks()
