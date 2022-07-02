@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter.font import Font
 
+from antioverheat.gui.powerman.auto_adjust import AutoAdjustControls
 from antioverheat.gui.powerman.scale import FrequencyScale
 from antioverheat.gui.widgets import DragWinButton
 from antioverheat.backend.api import CPUPowerAPI
@@ -18,7 +18,6 @@ class PowerManager(tk.Tk):
         self.attributes("-topmost", True)
 
         self.create_widgets()
-        self.auto_adjust_var.set(auto)
 
     def create_widgets(self):
         """Creates the widgets in the window."""
@@ -26,33 +25,11 @@ class PowerManager(tk.Tk):
         self.scale = FrequencyScale(self)
         self.scale.grid(row=0, column=0, columnspan=2)
 
-        self.auto_adjust_var = tk.BooleanVar()
-        self.auto_adjust_cbtn = tk.Checkbutton(self, text="Auto Adjust", font=Font(size=8),
-                                            variable=self.auto_adjust_var)
-        self.auto_adjust_cbtn.grid(row=1, column=0, columnspan=2, sticky="we")
-        self.after(5000, self.auto_adjust_step)
+        self.auto_adjust = AutoAdjustControls(self)
+        self.auto_adjust.grid(row=1, column=0, columnspan=2)
 
         self.close_btn = tk.Button(self, text="Close", command=self.destroy)
         self.close_btn.grid(row=2, column=0)
 
         self.drag_btn = DragWinButton(self)
         self.drag_btn.grid(row=2, column=1)
-
-    def auto_adjust_step(self):
-        """
-        This method stands for one step of "Auto Adjust".
-        It is called every 5 seconds, and adjusts the CPU frequency depending on its temperature.
-        """
-
-        if self.auto_adjust_var.get():
-            temperature = max(self.api.get_cpu_cores(), key=lambda core: core.value).value
-            current_max_policy = self.api.get_policy()[-1]
-            if temperature > 90:
-                self.api.set_policy(max=self.api.hardware_limits[0])
-            elif temperature > 70:
-                self.api.set_policy(max=current_max_policy - 100)
-            else:
-                self.api.set_policy(max=current_max_policy + 100)
-            self.scale.refresh()
-
-        self.after(5000, self.auto_adjust_step)
