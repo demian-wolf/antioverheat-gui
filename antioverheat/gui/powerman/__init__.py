@@ -2,7 +2,7 @@ import tkinter as tk
 
 from antioverheat.gui.powerman.auto_adjust import AutoAdjustControls
 from antioverheat.gui.powerman.scale import FrequencyScale
-from antioverheat.gui.widgets import DragWinButton
+from antioverheat.gui.powerman.drag_button import DragButton
 
 
 class PowerManager(tk.Tk):
@@ -25,4 +25,4 @@ class PowerManager(tk.Tk):
             command=self.destroy,
         ).grid(row=3, column=0)
 
-        DragWinButton(self).grid(row=3, column=1)
+        DragButton(self).grid(row=3, column=1)
