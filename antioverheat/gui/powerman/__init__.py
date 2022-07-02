@@ -15,16 +15,16 @@ class PowerManager(tk.Tk):
         self.api = CPUPowerAPI()
 
         self.overrideredirect(True)
+
         self.attributes("-topmost", True)
 
-        self.scale = FrequencyScale(self)
-        self.scale.grid(row=0, column=0, columnspan=2)
+        FrequencyScale(self).grid(row=0, columnspan=2)
+        AutoAdjustControls(self).grid(row=1, columnspan=2)
 
-        self.auto_adjust = AutoAdjustControls(self)
-        self.auto_adjust.grid(row=1, column=0, columnspan=2)
+        tk.Button(
+            self,
+            text="Close",
+            command=self.destroy,
+        ).grid(row=3, column=0)
 
-        self.close_btn = tk.Button(self, text="Close", command=self.destroy)
-        self.close_btn.grid(row=2, column=0)
-
-        self.drag_btn = DragWinButton(self)
-        self.drag_btn.grid(row=2, column=1)
+        DragWinButton(self).grid(row=3, column=1)
