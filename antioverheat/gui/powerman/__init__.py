@@ -1,7 +1,7 @@
 import tkinter as tk
 
 from .auto_adjust import AutoAdjustControls
-from .drag_button import DragButton
+from .drag import DragButton
 from .scale import FrequencyScale
 
 
