@@ -3,7 +3,6 @@ import tkinter as tk
 from antioverheat.gui.powerman.auto_adjust import AutoAdjustControls
 from antioverheat.gui.powerman.scale import FrequencyScale
 from antioverheat.gui.widgets import DragWinButton
-from antioverheat.backend.api import CPUPowerAPI
 
 
 class PowerManager(tk.Tk):
@@ -11,8 +10,6 @@ class PowerManager(tk.Tk):
 
     def __init__(self, auto):
         super(PowerManager, self).__init__()
-
-        self.api = CPUPowerAPI()
 
         self.overrideredirect(True)
 
