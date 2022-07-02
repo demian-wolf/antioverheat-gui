@@ -1,8 +1,8 @@
 import tkinter as tk
 
-from antioverheat.gui.powerman.auto_adjust import AutoAdjustControls
-from antioverheat.gui.powerman.scale import FrequencyScale
-from antioverheat.gui.powerman.drag_button import DragButton
+from .auto_adjust import AutoAdjustControls
+from .drag_button import DragButton
+from .scale import FrequencyScale
 
 
 class PowerManager(tk.Tk):
