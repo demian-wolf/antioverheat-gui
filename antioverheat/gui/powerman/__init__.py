@@ -17,11 +17,6 @@ class PowerManager(tk.Tk):
         self.overrideredirect(True)
         self.attributes("-topmost", True)
 
-        self.create_widgets()
-
-    def create_widgets(self):
-        """Creates the widgets in the window."""
-
         self.scale = FrequencyScale(self)
         self.scale.grid(row=0, column=0, columnspan=2)
 
