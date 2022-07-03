@@ -11,7 +11,6 @@ class PowerManager(tk.Tk):
     def __init__(self, auto_adjust: bool=False):
         super(PowerManager, self).__init__()
 
-        self.update_idletasks()
         self.overrideredirect(True)
 
         self.attributes("-topmost", True)
