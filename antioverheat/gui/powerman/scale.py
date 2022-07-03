@@ -26,9 +26,13 @@ class FrequencyScale(tk.Scale):
         self.after_idle(self.refresh, True)
 
     def command(self, value: Any) -> None:
-        self.event_generate(
-            "<<FrequencyUpdate>>",
-            data=int(value),
+        background = self._value2background(int(value))
+
+        configure_recursive(
+            self.winfo_toplevel(),
+
+            background=background,
+            activebackground=background,
         )
 
     def refresh(self, recursive: bool = False) -> None:
@@ -43,3 +47,14 @@ class FrequencyScale(tk.Scale):
         ratio = (value - self.min_value) / (self.max_value - self.min_value)
 
         return hsl2hex([(1 - ratio) / 3, 1, 0.5])
+
+
+def configure_recursive(widget: tk.Misc, **kwargs):
+    for key, value in kwargs.items():
+        try:
+            widget[key] = value
+        except tk.TclError:
+            pass
+
+    for child in widget.winfo_children():
+        configure_recursive(child, **kwargs)
