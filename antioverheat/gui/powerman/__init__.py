@@ -47,6 +47,8 @@ class PowerManager(App):
     def on_set(self, value: str) -> None:
         value = int(value)
 
+        self.api.set_policy(max=value)
+
         self.set_background(
             self.value2background(value, *self.api.hardware_limits),
         )
